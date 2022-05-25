@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="indoor_and_outdoor">
+    <physics name="3.0ms" type="ignored">
+      <max_step_size>3.0e-3</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <dart>
+        <collision_detector>bullet</collision_detector>
+        <solver>
+          <solver_type>dantzig</solver_type>
+        </solver>
+      </dart>
+    </physics>
+    <plugin filename="libignition-gazebo-physics-system.so" name="ignition::gazebo::systems::Physics">
+      <engine>
+        <filename>libignition-physics-dartsim-plugin.so</filename>
+      </engine>
+    </plugin>
+    <plugin filename="libignition-gazebo-sensors-system.so" name="ignition::gazebo::systems::Sensors"/>
+    <plugin filename="libignition-gazebo-user-commands-system.so" name="ignition::gazebo::systems::UserCommands"/>
+    <plugin filename="libignition-gazebo-scene-broadcaster-system.so" name="ignition::gazebo::systems::SceneBroadcaster"/>
+    <plugin filename="ignition-gazebo-contact-system" name="ignition::gazebo::systems::Contact"/>
+    <plugin filename="libignition-gazebo-imu-system.so" name="ignition::gazebo::systems::Imu"/>
+    <plugin filename="ignition-gazebo-magnetometer-system" name="ignition::gazebo::systems::Magnetometer"/>
+    <scene>
+      <ambient>1.0 1.0 1.0</ambient>
+      <background>0.8 0.8 0.8</background>
+      <sky/>
+    </scene>
+    <light type="directional" name="sun">
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <linear>0.01</linear>
+        <constant>0.9</constant>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+      <cast_shadows>true</cast_shadows>
+    </light>
+    <model name="ground_plane">
+      <static>true</static>
+      <pose>-25 -65 -7.1 0 0 0</pose>
+      <link name="ground_plane_link">
+        <collision name="ground_plane_collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="ground_plane_visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>300 300</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <include>
+      <static>true</static>
+      <pose>10 10 0 0 0 1.57</pose>
+      <name>oak_1</name>
+      <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Oak tree</uri>
+    </include>
+    <!-- Reference from Urban circuit world https://app.gazebosim.org/OpenRobotics/fuel/worlds/Urban%20Circuit%2001 -->
+    <model name="indoor">
+      <static>true</static>
+      <pose>0 -25 -8 0 0 0</pose>
+      <include>
+        <name>urban_starting_area</name>
+        <pose>0 0 0 0 0 0</pose>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Urban Starting Area</uri>
+      </include>
+      <include>
+        <name>urban_large_room_split_lights_1</name>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Urban Large Room Split Lights</uri>
+        <pose>-16.05 -16 0.92 0 0 3.14</pose>
+      </include>
+      <include>
+        <name>urban_large_room_split_lights_2</name>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Urban Large Room Split Lights</uri>
+        <pose>-16.05 -56 0.92 0 0 0</pose>
+      </include>
+      <include>
+        <name>urban_large_room_split_lights_3</name>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Urban Large Room Split Lights</uri>
+        <pose>-55.8 -94.8 0.905 0 0 1.57</pose>
+      </include>
+      <include>
+        <name>urban_large_room_split_lights_4</name>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Urban Large Room Split Lights</uri>
+        <pose>-95.8 -94.8 0.905 0 0 -1.57</pose>
+      </include>
+      <include>
+        <name>urban_service_room_centered</name>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Urban Service Room Centered</uri>
+        <pose>-15.1 -56 0.95 0 0 1.571</pose>
+      </include>
+      <include>
+        <name>urban_2_story_lights</name>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Urban 2 Story Lights</uri>
+        <pose>-16 -94.78 0.905 0 0 3.14</pose>
+      </include>
+    </model>
+  </world>
+</sdf>
