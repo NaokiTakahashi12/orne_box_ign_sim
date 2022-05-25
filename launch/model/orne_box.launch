@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments -->
+  <arg name="output" default="screen"/>
+  <arg name="namespace" default="simulator"/>
+  <arg name="robot_description" default="robot_description"/>
+  <arg name="world_name" default="ground_plane"/>
+  <arg name="position_x" default="1.0"/>
+  <arg name="position_y" default="1.0"/>
+  <arg name="position_z" default="0.3"/>
+  <arg name="euler_angles_x" default="0.0"/>
+  <arg name="euler_angles_y" default="0.0"/>
+  <arg name="euler_angles_z" default="0.0"/>
+  <arg name="joint_state_topic" default="/joint_states"/>
+  <arg name="imu_topic" default="/imu_data"/>
+  <arg name="cmd_vel_topic" default="/icart_mini/cmd_vel"/>
+  <arg name="odom_topic" default="/icart_mini/odom"/>
+  <arg name="rfans_points_topic" default="/rfans/surestar_points"/>
+  <arg name="rfans_scan_topic" default="/rfans/surestar_scan"/>
+  <arg name="hokuyo_scan_topic" default="/hokuyo_scan"/>
+  <arg name="zed_node_camera_info_topic" default="/zed_node/rgb/camera_info"/>
+  <arg name="zed_node_image_topic" default="/zed_node/rgb/image_rect_color"/>
+  <arg name="zed_node_depth_image_topic" default="/zed_node/depth/depth_registered"/>
+  <arg name="zed_node_points_topic" default="/zed_node/point_cloud/cloud_registered"/>
+  <arg name="robot_name" default="orne_box"/>
+  <arg name="base_frame" default="base_link"/>
+  <!-- Nodes -->
+  <group ns="$(arg namespace)" clear_params="true">
+    <param name="robot_description" command="xacro $(find orne_box_description)/urdf/orne_box_3d_lidar.urdf.xacro ignition_gazebo:=true enable_camera:=true"/>
+    <node pkg="ros_ign_gazebo" type="create" name="robot_spawner" output="$(arg output)" args="
+      -world $(arg world_name) \
+      -param $(arg robot_description) \
+      -x $(arg position_x) \
+      -y $(arg position_y) \
+      -z $(arg position_z) \
+      -R $(arg euler_angles_x) \
+      -P $(arg euler_angles_y) \
+      -Y $(arg euler_angles_z)">
+    </node>
+    <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_merger" output="$(arg output)">
+      <rosparam>
+        source_list:
+          - joint_state_bridge/joint_states
+        rate: 50
+        publish_default_positions: true
+        publish_default_velocities: true
+        publish_default_efforts: true
+      </rosparam>
+      <remap from="joint_states" to="$(arg joint_state_topic)"/>
+    </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="joint_state_bridge" output="$(arg output)" args="/model/$(arg robot_name)/joint_states@sensor_msgs/JointState[ignition.msgs.Model">
+      <remap from="/model/$(arg robot_name)/joint_states" to="~/joint_states"/>
+    </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="imu_bridge" output="$(arg output)" args="/model/$(arg robot_name)/imu@sensor_msgs/Imu[ignition.msgs.IMU">
+      <remap from="/model/$(arg robot_name)/imu" to="$(arg imu_topic)"/>
+    </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="surestar_points_bridge" output="$(arg output)" args="/model/$(arg robot_name)/rfans/points@sensor_msgs/PointCloud2@ignition.msgs.PointCloudPacked">
+      <remap from="/model/$(arg robot_name)/rfans/points" to="$(arg rfans_points_topic)"/>
+    </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="surestar_scan_bridge" output="$(arg output)" args="/model/$(arg robot_name)/rfans@sensor_msgs/LaserScan@ignition.msgs.LaserScan">
+      <remap from="/model/$(arg robot_name)/rfans" to="$(arg rfans_scan_topic)"/>
+    </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="hokuyo_scan_bridge" output="$(arg output)" args="/model/$(arg robot_name)/hokuyo_scan@sensor_msgs/LaserScan@ignition.msgs.LaserScan">
+      <remap from="/model/$(arg robot_name)/hokuyo_scan" to="$(arg hokuyo_scan_topic)"/>
+    </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="odom_bridge" output="$(arg output)" args="/model/$(arg robot_name)/odometry@nav_msgs/Odometry[ignition.msgs.Odometry">
+      <remap from="/model/$(arg robot_name)/odometry" to="$(arg odom_topic)"/>
+    </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="cmd_vel_bridge" output="$(arg output)" args="/model/$(arg robot_name)/cmd_vel@geometry_msgs/Twist@ignition.msgs.Twist">
+      <remap from="/model/$(arg robot_name)/cmd_vel" to="$(arg cmd_vel_topic)"/>
+    </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="correct_pose_bridge" output="$(arg output)" args="/model/$(arg robot_name)/pose@geometry_msgs/Pose@ignition.msgs.Pose">
+      <remap from="/model/$(arg robot_name)/pose" to="~/pose"/>
+    </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="zed_camera_info_bridge" output="$(arg output)" args="/model/$(arg robot_name)/zed_node/camera_info@sensor_msgs/CameraInfo@ignition.msgs.CameraInfo">
+      <remap from="/model/$(arg robot_name)/zed_node/camera_info" to="$(arg zed_node_camera_info_topic)"/>
+    </node>
+    <node pkg="ros_ign_image" type="image_bridge" name="zed_image_bridge" output="$(arg output)" args="/model/$(arg robot_name)/zed_node/image">
+      <remap from="/model/$(arg robot_name)/zed_node/image" to="$(arg zed_node_image_topic)"/>
+    </node>
+    <node pkg="ros_ign_image" type="image_bridge" name="zed_depth_image_bridge" output="$(arg output)" args="/model/$(arg robot_name)/zed_node/depth_image">
+      <remap from="/model/$(arg robot_name)/zed_node/depth_image" to="$(arg zed_node_depth_image_topic)"/>
+    </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="zed_points_bridge" output="$(arg output)" args="/model/$(arg robot_name)/zed_node/depth_image/points@sensor_msgs/PointCloud2@ignition.msgs.PointCloudPacked">
+      <remap from="/model/$(arg robot_name)/zed_node/depth_image/points" to="$(arg zed_node_points_topic)"/>
+    </node>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_stf"
+      args="0 0 0 0 0 0 base_link $(arg robot_name)/$(arg base_frame)"
+    />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="odom_stf"
+      args="0 0 0 0 0 0 odom $(arg robot_name)/odom"
+    />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="imu_stf"
+      args="0 0 0 0 0 0 imu_link $(arg robot_name)/$(arg base_frame)/imu_link"
+    />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="rfans_stf"
+      args="0 0 0 0 0 0 surestar $(arg robot_name)/$(arg base_frame)/surestar"
+    />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="hokuyo_stf"
+      args="0 0 0 0 0 0 hokuyo_link $(arg robot_name)/$(arg base_frame)/head_hokuyo_sensor"
+    />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="zed_stf"
+      args="0 0 0 0 0 0 hokuyo_link $(arg robot_name)/$(arg base_frame)/zed_camera_center"
+    />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="zed_depth_stf"
+      args="0 0 0 0 0 0 hokuyo_link $(arg robot_name)/$(arg base_frame)/zed_depth_camera_center"
+    />
+  </group>
+  <node pkg="tf2_ros" type="buffer_server" name="tf_buffer_server" output="$(arg output)">
+  </node>
+  <param name="robot_description" command="xacro $(find orne_box_description)/urdf/orne_box_3d_lidar.urdf.xacro"/>
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="$(arg output)">
+  </node>
+</launch>

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="namespace" default="orne_box_sim"/>
+  <arg name="world_name" default="indoor_and_outdoor"/>
+  <arg name="world_file" default="$(arg world_name).sdf"/>
+  <arg name="use_sim_gui" default="false"/>
+  <arg name="with_viz" default="false"/>
+ <group>
+  <include file="$(find orne_box_ign_sim)/launch/ignition_gazebo.launch">
+    <arg name="namespace" value="$(arg namespace)"/>
+    <arg name="world_name" value="$(arg world_name)"/>
+    <arg name="world_file" value="$(arg world_file)"/>
+    <arg name="use_sim_gui" value="$(arg use_sim_gui)"/>
+  </include>
+  <include file="$(find orne_box_ign_sim)/launch/model/orne_box.launch">
+    <arg name="namespace" value="$(arg namespace)"/>
+    <arg name="world_name" value="$(arg world_name)"/>
+  </include>
+  <group if="$(arg with_viz)">
+    <include file="$(find orne_box_ign_sim)/launch/visualize/orne_box_viz.launch">
+      <arg name="namespace" value="$(arg namespace)"/>
+    </include>
+  </group>
+ </group>
+</launch>

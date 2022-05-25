@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments -->
+  <arg name="output" default="screen"/>
+  <arg name="namespace" default="simulator"/>
+  <arg name="robot_model_path" default="$(find orne_box_ign_sim)/models/urdf"/>
+  <arg name="world_name" default="ground_plane"/>
+  <arg name="world_file" default="ground_plane.sdf"/>
+  <arg name="world_path" default="$(find orne_box_ign_sim)/worlds/ignition"/>
+  <arg name="ign_gazebo_physics_engine_path" default=""/>
+  <arg name="use_sim_gui" default="true"/>
+  <arg name="ign_fuel_model_path" default="$(env HOME)/.ignition/fuel/fuel.ignitionrobotics.org/*/models"/>
+  <!-- Enviroment variables -->
+  <env name="SDF_PATH" value="$(optenv SDF_PATH):$(arg robot_model_path)"/>
+  <env name="IGN_FILE_PATH" value="$(optenv IGN_FILE_PATH):$(arg robot_model_path);$(arg ign_gazebo_physics_engine_path)"/>
+  <env name="IGN_GAZEBO_SYSTEM_PLUGIN_PATH" value="$(optenv LD_LIBRARY_PATH)"/>
+  <env name="IGN_GAZEBO_RESOURCE_PATH" value="$(optenv IGN_GAZEBO_RESOURCE_PATH):$(arg robot_model_path):$(arg world_path)"/>
+  <env name="IGN_GAZEBO_PHYSICS_ENGINE_PATH" value="$(optenv IGN_GAZEBO_PHYSICS_ENGINE_PATH):$(arg ign_gazebo_physics_engine_path)"/>
+  <!-- Nodes -->
+  <group ns="$(arg namespace)" clear_params="true">
+    <param name="/use_sim_time" value="true"/>
+    <node pkg="ros_ign_gazebo" type="ign_gazebo" name="ign_server" output="$(arg output)" args="-r -s -v 1 $(arg world_file)" required="true">
+    </node>
+    <group if="$(arg use_sim_gui)">
+      <node pkg="ros_ign_gazebo" type="ign_gazebo" name="ign_gui" output="$(arg output)" args="-g" respawn="true">
+      </node>
+    </group>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="clock_bridge" output="$(arg output)" required="true" args="/world/$(arg world_name)/clock@rosgraph_msgs/Clock[ignition.msgs.Clock">
+      <remap from="/world/$(arg world_name)/clock" to="/clock"/>
+    </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="tf_bridge" output="$(arg output)" args="/world/$(arg world_name)/pose/info@tf2_msgs/TFMessage[ignition.msgs.Pose_V">
+      <remap from="/world/$(arg world_name)/pose/info" to="tf"/>
+    </node>
+  </group>
+</launch>
