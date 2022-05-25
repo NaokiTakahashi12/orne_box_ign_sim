@@ -111,4 +111,7 @@
   <param name="robot_description" command="xacro $(find orne_box_description)/urdf/orne_box_3d_lidar.urdf.xacro"/>
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="$(arg output)">
   </node>
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" output="$(arg output)">
+    <rosparam command="load" file="$(find orne_box_ign_sim)/config/robot_localization.yaml"/>
+  </node>
 </launch>
