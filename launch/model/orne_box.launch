@@ -104,10 +104,10 @@
       args="0 0 0 0 0 0 hokuyo_link $(arg robot_name)/$(arg base_frame)/head_hokuyo_sensor"
     />
     <node pkg="tf2_ros" type="static_transform_publisher" name="zed_stf"
-      args="0 0 0 0 0 0 hokuyo_link $(arg robot_name)/$(arg base_frame)/zed_camera_center"
+      args="0 0 0 0 0 0 zed_camera_center $(arg robot_name)/$(arg base_frame)/zed_camera_center"
     />
     <node pkg="tf2_ros" type="static_transform_publisher" name="zed_depth_stf"
-      args="0 0 0 0 0 0 hokuyo_link $(arg robot_name)/$(arg base_frame)/zed_depth_camera_center"
+      args="0 0 0 0 0 0 zed_camera_center $(arg robot_name)/$(arg base_frame)/zed_depth_camera_center"
     />
     <node pkg="tf2_ros" type="static_transform_publisher" name="gnss_stf"
       args="0 0 0 0 0 0 gnss_link $(arg robot_name)/$(arg base_frame)/gnss_link"
