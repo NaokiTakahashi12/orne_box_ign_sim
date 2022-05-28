@@ -22,6 +22,7 @@
     <plugin filename="ignition-gazebo-contact-system" name="ignition::gazebo::systems::Contact"/>
     <plugin filename="libignition-gazebo-imu-system.so" name="ignition::gazebo::systems::Imu"/>
     <plugin filename="ignition-gazebo-magnetometer-system" name="ignition::gazebo::systems::Magnetometer"/>
+    <plugin filename="ignition-gazebo-navsat-system" name="ignition::gazebo::systems::NavSat"/>
     <scene>
       <ambient>1.0 1.0 1.0</ambient>
       <background>0.8 0.8 0.8</background>

@@ -22,11 +22,12 @@
   <arg name="zed_node_image_topic" default="/zed_node/rgb/image_rect_color"/>
   <arg name="zed_node_depth_image_topic" default="/zed_node/depth/depth_registered"/>
   <arg name="zed_node_points_topic" default="/zed_node/point_cloud/cloud_registered"/>
+  <arg name="gnss_navsat_topic" default="/ublox/fix"/>
   <arg name="robot_name" default="orne_box"/>
   <arg name="base_frame" default="base_link"/>
   <!-- Nodes -->
   <group ns="$(arg namespace)" clear_params="true">
-    <param name="robot_description" command="xacro $(find orne_box_description)/urdf/orne_box_3d_lidar.urdf.xacro ignition_gazebo:=true enable_camera:=true"/>
+    <param name="robot_description" command="xacro $(find orne_box_description)/urdf/orne_box_3d_lidar.urdf.xacro ignition_gazebo:=true enable_camera:=false"/>
     <node pkg="ros_ign_gazebo" type="create" name="robot_spawner" output="$(arg output)" args="
       -world $(arg world_name) \
       -param $(arg robot_description) \
@@ -84,6 +85,9 @@
     <node pkg="ros_ign_bridge" type="parameter_bridge" name="zed_points_bridge" output="$(arg output)" args="/model/$(arg robot_name)/zed_node/depth_image/points@sensor_msgs/PointCloud2@ignition.msgs.PointCloudPacked">
       <remap from="/model/$(arg robot_name)/zed_node/depth_image/points" to="$(arg zed_node_points_topic)"/>
     </node>
+    <node pkg="ros_ign_bridge" type="parameter_bridge" name="gnss_bridge" output="$(arg output)" args="/model/$(arg robot_name)/navsat@sensor_msgs/NavSatFix@ignition.msgs.NavSat">
+      <remap from="/model/$(arg robot_name)/navsat" to="$(arg gnss_navsat_topic)"/>
+    </node>
     <node pkg="tf2_ros" type="static_transform_publisher" name="base_stf"
       args="0 0 0 0 0 0 base_link $(arg robot_name)/$(arg base_frame)"
     />
@@ -104,6 +108,9 @@
     />
     <node pkg="tf2_ros" type="static_transform_publisher" name="zed_depth_stf"
       args="0 0 0 0 0 0 hokuyo_link $(arg robot_name)/$(arg base_frame)/zed_depth_camera_center"
+    />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="gnss_stf"
+      args="0 0 0 0 0 0 gnss_link $(arg robot_name)/$(arg base_frame)/gnss_link"
     />
   </group>
   <node pkg="tf2_ros" type="buffer_server" name="tf_buffer_server" output="$(arg output)">
