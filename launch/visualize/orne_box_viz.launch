@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="output" default="screen"/>
+  <arg name="namespace" default="simulator"/>
+  <group ns="$(arg namespace)">
+    <node pkg="rviz" type="rviz" name="rviz" output="$(arg output)" respawn="true" args="-d $(find orne_box_ign_sim)/rviz/orne_box.rviz">
+    </node>
+  </group>
+</launch>
