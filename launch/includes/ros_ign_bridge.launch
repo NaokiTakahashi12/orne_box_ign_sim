@@ -2,16 +2,16 @@
 <launch>
   <!-- Arguments -->
   <arg name="output" default="screen"/>
+  <arg name="with_stf" default="true"/>
   <arg name="ign_topic"/>
   <arg name="ros_topic"/>
   <arg name="convert_args"/>
-  <arg name="ros_frame_id"/>
-  <arg name="ign_frame_id"/>
+  <arg name="ros_frame_id" if="$(arg with_stf)"/>
+  <arg name="ign_frame_id" if="$(arg with_stf)"/>
   <arg name="bridge_node_name" default="$(anon parameter_bridge)"/>
   <arg name="stf_node_name" default="$(anon static_transform_publisher)"/>
-  <arg name="with_stf" default="true"/>
   <!-- Nodes -->
-  <node pkg="ros_ign_bridge" type="parameter_bridge" name="$(arg bridge_node_name)" output="$(arg output)" args="$(arg ign_topic)@$(arg convert_args)">
+  <node pkg="ros_ign_image" type="image_bridge" name="$(arg bridge_node_name)" output="$(arg output)" args="$(arg ign_topic)@$(arg convert_args)">
     <remap from="$(arg ign_topic)" to="$(arg ros_topic)"/>
   </node>
   <group if="$(arg with_stf)">
