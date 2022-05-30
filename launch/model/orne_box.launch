@@ -23,11 +23,12 @@
   <arg name="zed_node_depth_image_topic" default="/zed_node/depth/depth_registered"/>
   <arg name="zed_node_points_topic" default="/zed_node/point_cloud/cloud_registered"/>
   <arg name="gnss_navsat_topic" default="/ublox/fix"/>
+  <arg name="enable_camera" default="true"/>
   <arg name="robot_name" default="orne_box"/>
   <arg name="base_frame" default="base_link"/>
   <!-- Nodes -->
   <group ns="$(arg namespace)" clear_params="true">
-    <param name="robot_description" command="xacro $(find orne_box_description)/urdf/orne_box_3d_lidar.urdf.xacro ignition_gazebo:=true enable_camera:=false"/>
+    <param name="robot_description" command="xacro $(find orne_box_description)/urdf/orne_box_3d_lidar.urdf.xacro ignition_gazebo:=true enable_camera:=$(arg enable_camera)"/>
     <node pkg="ros_ign_gazebo" type="create" name="robot_spawner" output="$(arg output)" args="
       -world $(arg world_name) \
       -param $(arg robot_description) \
