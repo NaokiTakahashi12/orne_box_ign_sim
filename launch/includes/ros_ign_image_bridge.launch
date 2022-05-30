@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments -->
+  <arg name="output" default="screen"/>
+  <arg name="with_stf" default="true"/>
+  <arg name="with_camera_info" default="true"/>
+  <arg name="ign_topic"/>
+  <arg name="ros_topic"/>
+  <arg name="ign_camera_info_topic" if="$(arg with_camera_info)"/>
+  <arg name="ros_camera_info_topic" if="$(arg with_camera_info)"/>
+  <arg name="ros_frame_id" if="$(arg with_stf)"/>
+  <arg name="ign_frame_id" if="$(arg with_stf)"/>
+  <arg name="bridge_node_name" default="$(anon parameter_bridge)"/>
+  <arg name="stf_node_name" default="$(anon static_transform_publisher)"/>
+  <!-- Nodes -->
+  <node pkg="ros_ign_image" type="image_bridge" name="$(arg bridge_node_name)" output="$(arg output)" args="$(arg ign_topic)">
+    <remap from="$(arg ign_topic)" to="$(arg ros_topic)"/>
+  </node>
+  <group if="$(arg with_stf)">
+    <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg stf_node_name)" output="$(arg output)" args="0 0 0 0 0 0 $(arg ros_frame_id) $(arg ign_frame_id)">
+    </node>
+  </group>
+  <group if="$(arg with_camera_info)">
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="$(arg ign_camera_info_topic)"/>
+      <arg name="ros_topic" value="$(arg ros_camera_info_topic)"/>
+      <arg name="convert_args" value="sensor_msgs/CameraInfo[ignition.msgs.CameraInfo"/>
+      <arg name="with_stf" value="false"/>
+    </include>
+  </group>
+</launch>
