@@ -155,6 +155,9 @@
     <arg name="enable_mapping" value="false"/>
     <arg name="enable_slam" value="true"/>
   </include>
-  <node pkg="map_server" type="map_server" name="map_server" args="$(find orne_box_ign_sim)/maps/map.yaml">
-  </node>
+  <include file="$(find orne_box_navigation_executor)/launch/move_base.launch">
+    <arg name="cmd_vel" value="$(arg cmd_vel_topic)"/>
+    <arg name="odom_topic" value="$(arg odom_topic)"/>
+    <arg name="map_file" value="$(find orne_box_ign_sim)/maps/map"/>
+  </include>
 </launch>
