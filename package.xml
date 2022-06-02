@@ -9,10 +9,12 @@
   <exec_depend>orne_box_description</exec_depend>
   <exec_depend>ros_ign_gazebo</exec_depend>
   <exec_depend>ros_ign_bridge</exec_depend>
+  <exec_depend>ros_ign_image</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>robot_localization</exec_depend>
+  <exec_depend>slam_toolbox</exec_depend>
   <exec_depend>xacro</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
