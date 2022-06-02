@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments -->
+  <arg name="output" default="screen"/>
+  <arg name="namespace" default="localization"/>
+  <arg name="enable_mapping" default="true"/>
+  <arg name="enable_slam" default="true"/>
+  <arg name="robot_localization_config_file"/>
+  <arg name="slam_toolbox_config_file"/>
+  <arg name="map_frame" default="map"/>
+  <!-- Nodes -->
+  <group ns="$(arg namespace)" clear_params="true">
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" output="$(arg output)">
+      <rosparam command="load" file="$(arg robot_localization_config_file)"/>
+    </node>
+    <group if="$(arg enable_slam)">
+      <group if="$(arg enable_mapping)">
+        <node pkg="slam_toolbox" type="async_slam_toolbox_node" name="async_slam_toolbox" output="$(arg output)">
+          <rosparam command="load" file="$(arg slam_toolbox_config_file)"/>
+          <remap from="/map" to="~/map"/>
+          <remap from="/map_metadata" to="~/map_metadata"/>
+        </node>
+      </group>
+      <group unless="$(arg enable_mapping)">
+        <node pkg="slam_toolbox" type="localization_slam_toolbox_node" name="localization_slam_toolbox" output="$(arg output)">
+          <rosparam command="load" file="$(arg slam_toolbox_config_file)"/>
+          <remap from="/map" to="~/map"/>
+          <remap from="/map_metadata" to="~/map_metadata"/>
+        </node>
+      </group>
+    </group>
+  </group>
+</launch>

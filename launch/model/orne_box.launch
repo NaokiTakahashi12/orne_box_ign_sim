@@ -23,11 +23,12 @@
   <arg name="zed_node_depth_image_topic" default="/zed_node/depth/depth_registered"/>
   <arg name="zed_node_points_topic" default="/zed_node/point_cloud/cloud_registered"/>
   <arg name="gnss_navsat_topic" default="/ublox/fix"/>
+  <arg name="enable_camera" default="true"/>
   <arg name="robot_name" default="orne_box"/>
   <arg name="base_frame" default="base_link"/>
   <!-- Nodes -->
   <group ns="$(arg namespace)" clear_params="true">
-    <param name="robot_description" command="xacro $(find orne_box_description)/urdf/orne_box_3d_lidar.urdf.xacro ignition_gazebo:=true enable_camera:=false"/>
+    <param name="robot_description" command="xacro $(find orne_box_description)/urdf/orne_box_3d_lidar.urdf.xacro ignition_gazebo:=true enable_camera:=$(arg enable_camera)"/>
     <node pkg="ros_ign_gazebo" type="create" name="robot_spawner" output="$(arg output)" args="
       -world $(arg world_name) \
       -param $(arg robot_description) \
@@ -49,68 +50,98 @@
       </rosparam>
       <remap from="joint_states" to="$(arg joint_state_topic)"/>
     </node>
-    <node pkg="ros_ign_bridge" type="parameter_bridge" name="joint_state_bridge" output="$(arg output)" args="/model/$(arg robot_name)/joint_states@sensor_msgs/JointState[ignition.msgs.Model">
-      <remap from="/model/$(arg robot_name)/joint_states" to="~/joint_states"/>
-    </node>
-    <node pkg="ros_ign_bridge" type="parameter_bridge" name="imu_bridge" output="$(arg output)" args="/model/$(arg robot_name)/imu@sensor_msgs/Imu[ignition.msgs.IMU">
-      <remap from="/model/$(arg robot_name)/imu" to="$(arg imu_topic)"/>
-    </node>
-    <node pkg="ros_ign_bridge" type="parameter_bridge" name="surestar_points_bridge" output="$(arg output)" args="/model/$(arg robot_name)/rfans/points@sensor_msgs/PointCloud2@ignition.msgs.PointCloudPacked">
-      <remap from="/model/$(arg robot_name)/rfans/points" to="$(arg rfans_points_topic)"/>
-    </node>
-    <node pkg="ros_ign_bridge" type="parameter_bridge" name="surestar_scan_bridge" output="$(arg output)" args="/model/$(arg robot_name)/rfans@sensor_msgs/LaserScan@ignition.msgs.LaserScan">
-      <remap from="/model/$(arg robot_name)/rfans" to="$(arg rfans_scan_topic)"/>
-    </node>
-    <node pkg="ros_ign_bridge" type="parameter_bridge" name="hokuyo_scan_bridge" output="$(arg output)" args="/model/$(arg robot_name)/hokuyo_scan@sensor_msgs/LaserScan@ignition.msgs.LaserScan">
-      <remap from="/model/$(arg robot_name)/hokuyo_scan" to="$(arg hokuyo_scan_topic)"/>
-    </node>
-    <node pkg="ros_ign_bridge" type="parameter_bridge" name="odom_bridge" output="$(arg output)" args="/model/$(arg robot_name)/odometry@nav_msgs/Odometry[ignition.msgs.Odometry">
-      <remap from="/model/$(arg robot_name)/odometry" to="$(arg odom_topic)"/>
-    </node>
-    <node pkg="ros_ign_bridge" type="parameter_bridge" name="cmd_vel_bridge" output="$(arg output)" args="/model/$(arg robot_name)/cmd_vel@geometry_msgs/Twist@ignition.msgs.Twist">
-      <remap from="/model/$(arg robot_name)/cmd_vel" to="$(arg cmd_vel_topic)"/>
-    </node>
-    <node pkg="ros_ign_bridge" type="parameter_bridge" name="correct_pose_bridge" output="$(arg output)" args="/model/$(arg robot_name)/pose@geometry_msgs/Pose@ignition.msgs.Pose">
-      <remap from="/model/$(arg robot_name)/pose" to="~/pose"/>
-    </node>
-    <node pkg="ros_ign_bridge" type="parameter_bridge" name="zed_camera_info_bridge" output="$(arg output)" args="/model/$(arg robot_name)/zed_node/camera_info@sensor_msgs/CameraInfo@ignition.msgs.CameraInfo">
-      <remap from="/model/$(arg robot_name)/zed_node/camera_info" to="$(arg zed_node_camera_info_topic)"/>
-    </node>
-    <node pkg="ros_ign_image" type="image_bridge" name="zed_image_bridge" output="$(arg output)" args="/model/$(arg robot_name)/zed_node/image">
-      <remap from="/model/$(arg robot_name)/zed_node/image" to="$(arg zed_node_image_topic)"/>
-    </node>
-    <node pkg="ros_ign_image" type="image_bridge" name="zed_depth_image_bridge" output="$(arg output)" args="/model/$(arg robot_name)/zed_node/depth_image">
-      <remap from="/model/$(arg robot_name)/zed_node/depth_image" to="$(arg zed_node_depth_image_topic)"/>
-    </node>
-    <node pkg="ros_ign_bridge" type="parameter_bridge" name="zed_points_bridge" output="$(arg output)" args="/model/$(arg robot_name)/zed_node/depth_image/points@sensor_msgs/PointCloud2@ignition.msgs.PointCloudPacked">
-      <remap from="/model/$(arg robot_name)/zed_node/depth_image/points" to="$(arg zed_node_points_topic)"/>
-    </node>
-    <node pkg="ros_ign_bridge" type="parameter_bridge" name="gnss_bridge" output="$(arg output)" args="/model/$(arg robot_name)/navsat@sensor_msgs/NavSatFix@ignition.msgs.NavSat">
-      <remap from="/model/$(arg robot_name)/navsat" to="$(arg gnss_navsat_topic)"/>
-    </node>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/joint_states"/>
+      <arg name="ros_topic" value="~/joint_states"/>
+      <arg name="convert_args" value="sensor_msgs/JointState[ignition.msgs.Model"/>
+      <arg name="bridge_node_name" value="joint_state_bridge"/>
+      <arg name="with_stf" value="false"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/imu"/>
+      <arg name="ros_topic" value="$(arg imu_topic)"/>
+      <arg name="convert_args" value="sensor_msgs/Imu[ignition.msgs.IMU"/>
+      <arg name="ros_frame_id" value="imu_link"/>
+      <arg name="ign_frame_id" value="$(arg robot_name)/$(arg base_frame)/imu_link"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/points"/>
+      <arg name="ros_topic" value="$(arg rfans_points_topic)"/>
+      <arg name="convert_args" value="sensor_msgs/PointCloud2[ignition.msgs.PointCloudPacked"/>
+      <arg name="ros_frame_id" value="surestar"/>
+      <arg name="ign_frame_id" value="$(arg robot_name)/$(arg base_frame)/surestar"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/rfans/points"/>
+      <arg name="ros_topic" value="$(arg rfans_points_topic)"/>
+      <arg name="convert_args" value="sensor_msgs/PointCloud2[ignition.msgs.PointCloudPacked"/>
+      <arg name="ros_frame_id" value="surestar"/>
+      <arg name="ign_frame_id" value="$(arg robot_name)/$(arg base_frame)/surestar"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/rfans"/>
+      <arg name="ros_topic" value="$(arg rfans_scan_topic)"/>
+      <arg name="convert_args" value="sensor_msgs/LaserScan[ignition.msgs.LaserScan"/>
+      <arg name="ros_frame_id" value="surestar"/>
+      <arg name="ign_frame_id" value="$(arg robot_name)/$(arg base_frame)/surestar"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/hokuyo_scan"/>
+      <arg name="ros_topic" value="$(arg hokuyo_scan_topic)"/>
+      <arg name="convert_args" value="sensor_msgs/LaserScan[ignition.msgs.LaserScan"/>
+      <arg name="ros_frame_id" value="hokuyo_link"/>
+      <arg name="ign_frame_id" value="$(arg robot_name)/$(arg base_frame)/head_hokuyo_sensor"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/odometry"/>
+      <arg name="ros_topic" value="$(arg odom_topic)"/>
+      <arg name="convert_args" value="nav_msgs/Odometry[ignition.msgs.Odometry"/>
+      <arg name="ros_frame_id" value="odom"/>
+      <arg name="ign_frame_id" value="$(arg robot_name)/odom"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/cmd_vel"/>
+      <arg name="ros_topic" value="$(arg cmd_vel_topic)"/>
+      <arg name="convert_args" value="geometry_msgs/Twist]ignition.msgs.Twist"/>
+      <arg name="with_stf" value="false"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/pose"/>
+      <arg name="ros_topic" value="~/pose"/>
+      <arg name="bridge_node_name" value="correct_pose_bridge"/>
+      <arg name="convert_args" value="geometry_msgs/Pose[ignition.msgs.Pose"/>
+      <arg name="with_stf" value="false"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/navsat"/>
+      <arg name="ros_topic" value="$(arg gnss_navsat_topic)"/>
+      <arg name="convert_args" value="sensor_msgs/NavSatFix[ignition.msgs.NavSat"/>
+      <arg name="ros_frame_id" value="gnss_link"/>
+      <arg name="ign_frame_id" value="$(arg robot_name)/gnss_link"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_image_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/zed_node/image"/>
+      <arg name="ros_topic" value="$(arg zed_node_image_topic)"/>
+      <arg name="ign_camera_info_topic" value="/model/$(arg robot_name)/zed_node/camera_info"/>
+      <arg name="ros_camera_info_topic" value="$(arg zed_node_camera_info_topic)"/>
+      <arg name="ros_frame_id" value="zed_camera_center"/>
+      <arg name="ign_frame_id" value="$(arg robot_name)/zed_camera_center"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_image_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/zed_node/depth_image"/>
+      <arg name="ros_topic" value="$(arg zed_node_depth_image_topic)"/>
+      <arg name="with_stf" value="false"/>
+      <arg name="with_camera_info" value="false"/>
+    </include>
+    <include file="$(find orne_box_ign_sim)/launch/includes/ros_ign_bridge.launch">
+      <arg name="ign_topic" value="/model/$(arg robot_name)/depth_image/points"/>
+      <arg name="ros_topic" value="$(arg zed_node_points_topic)"/>
+      <arg name="convert_args" value="sensor_msgs/PointCloud2[ignition.msgs.PointCloudPacked"/>
+      <arg name="ros_frame_id" value="zed_camera_center"/>
+      <arg name="ign_frame_id" value="$(arg robot_name)/zed_depth_camera_center"/>
+    </include>
     <node pkg="tf2_ros" type="static_transform_publisher" name="base_stf"
       args="0 0 0 0 0 0 base_link $(arg robot_name)/$(arg base_frame)"
-    />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="odom_stf"
-      args="0 0 0 0 0 0 odom $(arg robot_name)/odom"
-    />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="imu_stf"
-      args="0 0 0 0 0 0 imu_link $(arg robot_name)/$(arg base_frame)/imu_link"
-    />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="rfans_stf"
-      args="0 0 0 0 0 0 surestar $(arg robot_name)/$(arg base_frame)/surestar"
-    />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="hokuyo_stf"
-      args="0 0 0 0 0 0 hokuyo_link $(arg robot_name)/$(arg base_frame)/head_hokuyo_sensor"
-    />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="zed_stf"
-      args="0 0 0 0 0 0 zed_camera_center $(arg robot_name)/$(arg base_frame)/zed_camera_center"
-    />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="zed_depth_stf"
-      args="0 0 0 0 0 0 zed_camera_center $(arg robot_name)/$(arg base_frame)/zed_depth_camera_center"
-    />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="gnss_stf"
-      args="0 0 0 0 0 0 gnss_link $(arg robot_name)/$(arg base_frame)/gnss_link"
     />
   </group>
   <node pkg="tf2_ros" type="buffer_server" name="tf_buffer_server" output="$(arg output)">
@@ -118,7 +149,15 @@
   <param name="robot_description" command="xacro $(find orne_box_description)/urdf/orne_box_3d_lidar.urdf.xacro"/>
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="$(arg output)">
   </node>
-  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" output="$(arg output)">
-    <rosparam command="load" file="$(find orne_box_ign_sim)/config/robot_localization.yaml"/>
-  </node>
+  <include file="$(find orne_box_ign_sim)/launch/includes/localization.launch">
+    <arg name="robot_localization_config_file" value="$(find orne_box_ign_sim)/config/$(arg robot_name)/robot_localization.yaml"/>
+    <arg name="slam_toolbox_config_file" value="$(find orne_box_ign_sim)/config/$(arg robot_name)/slam_toolbox_async.yaml"/>
+    <arg name="enable_mapping" value="false"/>
+    <arg name="enable_slam" value="true"/>
+  </include>
+  <include file="$(find orne_box_navigation_executor)/launch/move_base.launch">
+    <arg name="cmd_vel" value="$(arg cmd_vel_topic)"/>
+    <arg name="odom_topic" value="$(arg odom_topic)"/>
+    <arg name="map_file" value="$(find orne_box_ign_sim)/maps/map"/>
+  </include>
 </launch>
